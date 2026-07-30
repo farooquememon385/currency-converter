@@ -48,6 +48,7 @@ describe('CurrencyService', () => {
     httpService.get.mockReturnValue(of(response));
 
     await expect(service.getCurrencies()).resolves.toEqual(response.data);
+    await expect(service.getCurrencies()).resolves.toEqual(response.data);
     expect(httpService.get).toHaveBeenCalledWith(
       'https://currency.test/v1/currencies',
       {
@@ -55,12 +56,19 @@ describe('CurrencyService', () => {
         params: {},
       },
     );
+    expect(httpService.get).toHaveBeenCalledTimes(1);
   });
 
-  it('normalizes latest-rate query parameters', async () => {
-    httpService.get.mockReturnValue(of({ data: { data: { EUR: 0.85 } } }));
+  it('normalizes and caches latest unit rates by currency pair', async () => {
+    const response = { data: { data: { EUR: 0.85, GBP: 0.75 } } };
+    httpService.get.mockReturnValue(of(response));
 
-    await service.getLatestRates(' usd ', 'eur, gbp');
+    await expect(service.getLatestRates(' usd ', 'eur, gbp')).resolves.toEqual(
+      response.data,
+    );
+    await expect(service.getLatestRates('USD', 'EUR,GBP')).resolves.toEqual(
+      response.data,
+    );
 
     expect(httpService.get).toHaveBeenCalledWith(
       'https://currency.test/v1/latest',
@@ -72,6 +80,30 @@ describe('CurrencyService', () => {
         },
       },
     );
+    expect(httpService.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('only requests unit rates missing from the cache', async () => {
+    httpService.get
+      .mockReturnValueOnce(of({ data: { data: { EUR: 0.85 } } }))
+      .mockReturnValueOnce(of({ data: { data: { GBP: 0.75 } } }));
+
+    await service.getLatestRates('USD', 'EUR');
+    await expect(service.getLatestRates('USD', 'EUR,GBP')).resolves.toEqual({
+      data: { EUR: 0.85, GBP: 0.75 },
+    });
+
+    expect(httpService.get).toHaveBeenLastCalledWith(
+      'https://currency.test/v1/latest',
+      {
+        headers: { apikey: 'test-key' },
+        params: {
+          base_currency: 'USD',
+          currencies: 'GBP',
+        },
+      },
+    );
+    expect(httpService.get).toHaveBeenCalledTimes(2);
   });
 
   it('requests historical rates for a valid date', async () => {

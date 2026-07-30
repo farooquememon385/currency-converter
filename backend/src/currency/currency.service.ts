@@ -14,10 +14,24 @@ import {
   LatestRatesResponse,
 } from './currency.types';
 
+const CURRENCIES_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const LATEST_RATE_CACHE_TTL_MS = 5 * 60 * 1000;
+
+interface CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
 @Injectable()
 export class CurrencyService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
+  private currenciesCache?: CacheEntry<CurrenciesResponse>;
+  private readonly latestRateCache = new Map<string, CacheEntry<number>>();
+  private readonly allLatestRatesCache = new Map<
+    string,
+    CacheEntry<LatestRatesResponse>
+  >();
 
   constructor(
     private readonly httpService: HttpService,
@@ -30,25 +44,108 @@ export class CurrencyService {
   }
 
   async getCurrencies(): Promise<CurrenciesResponse> {
-    return this.get<CurrenciesResponse>('/currencies');
+    const cachedCurrencies = this.getCached(this.currenciesCache);
+
+    if (cachedCurrencies) {
+      return cachedCurrencies;
+    }
+
+    const currencies = await this.get<CurrenciesResponse>('/currencies');
+    this.currenciesCache = this.createCacheEntry(
+      currencies,
+      CURRENCIES_CACHE_TTL_MS,
+    );
+
+    return currencies;
   }
 
   async getLatestRates(
     baseCurrency = 'USD',
     currencies?: string,
   ): Promise<LatestRatesResponse> {
-    const params: Record<string, string> = {
-      base_currency: this.normalizeCurrency(baseCurrency),
-    };
+    const normalizedBase = this.normalizeCurrency(baseCurrency);
 
-    if (currencies) {
-      params.currencies = currencies
-        .split(',')
-        .map((currency) => this.normalizeCurrency(currency))
-        .join(',');
+    if (!currencies) {
+      return this.getAllLatestRates(normalizedBase);
     }
 
-    return this.get<LatestRatesResponse>('/latest', params);
+    const targetCurrencies = [
+      ...new Set(
+        currencies
+          .split(',')
+          .map((currency) => this.normalizeCurrency(currency)),
+      ),
+    ];
+    const rates: Record<string, number> = {};
+    const missingCurrencies: string[] = [];
+
+    for (const targetCurrency of targetCurrencies) {
+      const cachedRate = this.getCached(
+        this.latestRateCache.get(
+          this.latestRateCacheKey(normalizedBase, targetCurrency),
+        ),
+      );
+
+      if (cachedRate === undefined) {
+        missingCurrencies.push(targetCurrency);
+      } else {
+        rates[targetCurrency] = cachedRate;
+      }
+    }
+
+    if (missingCurrencies.length > 0) {
+      const response = await this.get<LatestRatesResponse>('/latest', {
+        base_currency: normalizedBase,
+        currencies: missingCurrencies.join(','),
+      });
+
+      for (const [targetCurrency, rate] of Object.entries(response.data)) {
+        this.latestRateCache.set(
+          this.latestRateCacheKey(normalizedBase, targetCurrency),
+          this.createCacheEntry(rate, LATEST_RATE_CACHE_TTL_MS),
+        );
+        rates[targetCurrency] = rate;
+      }
+    }
+
+    return {
+      data: Object.fromEntries(
+        targetCurrencies
+          .filter((currency) => rates[currency] !== undefined)
+          .map((currency) => [currency, rates[currency]]),
+      ),
+    };
+  }
+
+  private async getAllLatestRates(
+    baseCurrency: string,
+  ): Promise<LatestRatesResponse> {
+    const cachedRates = this.getCached(
+      this.allLatestRatesCache.get(baseCurrency),
+    );
+
+    if (cachedRates) {
+      return cachedRates;
+    }
+
+    const params: Record<string, string> = {
+      base_currency: baseCurrency,
+    };
+    const response = await this.get<LatestRatesResponse>('/latest', params);
+
+    this.allLatestRatesCache.set(
+      baseCurrency,
+      this.createCacheEntry(response, LATEST_RATE_CACHE_TTL_MS),
+    );
+
+    for (const [targetCurrency, rate] of Object.entries(response.data)) {
+      this.latestRateCache.set(
+        this.latestRateCacheKey(baseCurrency, targetCurrency),
+        this.createCacheEntry(rate, LATEST_RATE_CACHE_TTL_MS),
+      );
+    }
+
+    return response;
   }
 
   async getHistoricalRates(
@@ -101,6 +198,28 @@ export class CurrencyService {
     }
 
     return normalized;
+  }
+
+  private latestRateCacheKey(
+    baseCurrency: string,
+    targetCurrency: string,
+  ): string {
+    return `${baseCurrency}:${targetCurrency}`;
+  }
+
+  private createCacheEntry<T>(value: T, ttl: number): CacheEntry<T> {
+    return {
+      value,
+      expiresAt: Date.now() + ttl,
+    };
+  }
+
+  private getCached<T>(entry?: CacheEntry<T>): T | undefined {
+    if (!entry || entry.expiresAt <= Date.now()) {
+      return undefined;
+    }
+
+    return entry.value;
   }
 
   private async get<T>(

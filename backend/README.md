@@ -25,6 +25,13 @@ default.
 The `base` query defaults to `USD`. The optional `currencies` query accepts
 comma-separated three-letter currency codes.
 
+## Caching
+
+The supported-currency list is cached in memory for 24 hours. Latest unit rates
+are cached per base/target pair for 5 minutes, so converting different amounts
+with the same pair does not consume additional provider requests. Historical
+rates are requested directly.
+
 ## Commands
 
 ```bash
