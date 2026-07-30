@@ -3,11 +3,9 @@ import Alert from 'react-bootstrap/Alert'
 import Badge from 'react-bootstrap/Badge'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
-import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
-import Row from 'react-bootstrap/Row'
 import Spinner from 'react-bootstrap/Spinner'
 import {
   getCurrencies,
@@ -48,6 +46,12 @@ function formatCurrency(value: number, currency: string): string {
     currency,
     maximumFractionDigits: 6,
   }).format(value)
+}
+
+function formatRate(rate: number): string {
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 6,
+  }).format(rate)
 }
 
 function App() {
@@ -173,8 +177,8 @@ function App() {
           <Badge pill bg="light" text="primary" className="eyebrow">
             Live exchange rates
           </Badge>
-          <h1>Convert money in seconds.</h1>
-          <p>
+          <h1>Convert money in seconds</h1>
+          <p className="page-subtitle">
             Choose from currencies around the world and get the latest rate.
           </p>
         </header>
@@ -182,25 +186,26 @@ function App() {
         <Card className="converter-card">
           <Card.Body>
             <div className="card-heading">
-              <div>
-                <span className="section-label">Currency converter</span>
-                <h2>How much do you want to convert?</h2>
-              </div>
+              <h2 id="converter-heading">Currency converter</h2>
               <span className="secure-note">
                 <span className="status-dot" aria-hidden="true" />
                 Rates online
               </span>
             </div>
 
-            {error && (
-              <Alert
-                variant="danger"
-                dismissible
-                onClose={() => setError('')}
-              >
-                {error}
-              </Alert>
-            )}
+            <div aria-live="polite">
+              {error && (
+                <Alert
+                  variant="danger"
+                  dismissible
+                  role="alert"
+                  className="form-alert"
+                  onClose={() => setError('')}
+                >
+                  {error}
+                </Alert>
+              )}
+            </div>
 
             {loadingCurrencies ? (
               <div className="loading-state" role="status">
@@ -208,16 +213,22 @@ function App() {
                 <span>Loading supported currencies…</span>
               </div>
             ) : (
-              <Form onSubmit={handleConvert}>
+              <Form
+                onSubmit={handleConvert}
+                aria-labelledby="converter-heading"
+                aria-busy={converting}
+              >
                 <Form.Group controlId="amount" className="amount-field">
                   <Form.Label>Amount</Form.Label>
-                  <InputGroup size="lg">
-                    <InputGroup.Text>
+                  <InputGroup>
+                    <InputGroup.Text aria-hidden="true">
                       {selectedFrom?.symbol || fromCurrency}
                     </InputGroup.Text>
                     <Form.Control
                       type="number"
                       inputMode="decimal"
+                      enterKeyHint="go"
+                      autoComplete="off"
                       min="0"
                       step="any"
                       value={amount}
@@ -232,44 +243,38 @@ function App() {
                   </InputGroup>
                 </Form.Group>
 
-                <Row className="currency-row align-items-end">
-                  <Col xs={12} md>
-                    <CurrencySelect
-                      id="from-currency"
-                      label="From"
-                      currencies={currencies}
-                      value={fromCurrency}
-                      onChange={(currency) =>
-                        handleSelectionChange(setFromCurrency, currency)
-                      }
-                    />
-                  </Col>
+                <div className="currency-row">
+                  <CurrencySelect
+                    id="from-currency"
+                    label="From"
+                    currencies={currencies}
+                    value={fromCurrency}
+                    onChange={(currency) =>
+                      handleSelectionChange(setFromCurrency, currency)
+                    }
+                  />
 
-                  <Col xs={12} md="auto" className="swap-column">
-                    <Button
-                      type="button"
-                      variant="light"
-                      className="swap-button"
-                      onClick={handleSwap}
-                      aria-label="Swap currencies"
-                      title="Swap currencies"
-                    >
-                      <span aria-hidden="true">⇅</span>
-                    </Button>
-                  </Col>
+                  <Button
+                    type="button"
+                    variant="light"
+                    className="swap-button"
+                    onClick={handleSwap}
+                    aria-label="Swap currencies"
+                    title="Swap currencies"
+                  >
+                    <span aria-hidden="true">⇅</span>
+                  </Button>
 
-                  <Col xs={12} md>
-                    <CurrencySelect
-                      id="to-currency"
-                      label="To"
-                      currencies={currencies}
-                      value={toCurrency}
-                      onChange={(currency) =>
-                        handleSelectionChange(setToCurrency, currency)
-                      }
-                    />
-                  </Col>
-                </Row>
+                  <CurrencySelect
+                    id="to-currency"
+                    label="To"
+                    currencies={currencies}
+                    value={toCurrency}
+                    onChange={(currency) =>
+                      handleSelectionChange(setToCurrency, currency)
+                    }
+                  />
+                </div>
 
                 <div className="rate-options">
                   <Form.Check
@@ -300,8 +305,7 @@ function App() {
                         required
                       />
                       <Form.Text>
-                        Historical end-of-day rates are generally available
-                        from 1999.
+                        End-of-day rates are available from 1999 onwards.
                       </Form.Text>
                     </Form.Group>
                   )}
@@ -323,26 +327,28 @@ function App() {
                       Converting…
                     </>
                   ) : (
-                    'Convert currency'
+                    'Convert'
                   )}
                 </Button>
               </Form>
             )}
 
-            {result && (
-              <section className="result-panel" aria-live="polite">
-                <span>
-                  {formatCurrency(result.amount, result.from)} equals
-                </span>
-                <strong>
-                  {formatCurrency(result.convertedAmount, result.to)}
-                </strong>
-                <small>
-                  1 {result.from} = {result.rate.toLocaleString()} {result.to}
-                  {result.rateDate && ` · Rate from ${result.rateDate}`}
-                </small>
-              </section>
-            )}
+            <div aria-live="polite">
+              {result && (
+                <section className="result-panel">
+                  <span>
+                    {formatCurrency(result.amount, result.from)} equals
+                  </span>
+                  <strong>
+                    {formatCurrency(result.convertedAmount, result.to)}
+                  </strong>
+                  <small>
+                    1 {result.from} = {formatRate(result.rate)} {result.to}
+                    {result.rateDate && ` · Rate from ${result.rateDate}`}
+                  </small>
+                </section>
+              )}
+            </div>
           </Card.Body>
         </Card>
 

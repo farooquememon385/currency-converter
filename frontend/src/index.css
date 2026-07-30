@@ -36,47 +36,47 @@ body {
 
 .app-shell {
   min-height: 100svh;
-  padding: 2rem 0 1.25rem;
+  padding: 1.25rem 0 1.5rem;
 }
 
 .converter-container {
-  max-width: 860px;
+  max-width: 760px;
 }
 
 .page-header {
-  max-width: 650px;
-  margin: 0 auto 1.75rem;
+  max-width: 34rem;
+  margin: 0 auto 1rem;
   text-align: center;
 }
 
 .eyebrow {
-  margin-bottom: 1rem;
-  padding: 0.55rem 0.85rem;
+  margin-bottom: 0.9rem;
+  padding: 0.45rem 0.75rem;
   border: 1px solid rgb(49 87 213 / 12%);
   box-shadow: 0 5px 20px rgb(49 87 213 / 8%);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .page-header h1 {
-  margin-bottom: 0.75rem;
-  font-size: clamp(2rem, 8vw, 3.75rem);
+  margin-bottom: 0.35rem;
+  font-size: clamp(1.6rem, 6.4vw, 2.75rem);
   font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: 1.03;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
 }
 
-.page-header p {
+.page-subtitle {
   margin: 0 auto;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.88rem;
 }
 
 .converter-card {
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 75%);
-  border-radius: 1.35rem;
+  border-radius: 1.15rem;
   background: rgb(255 255 255 / 92%);
   box-shadow:
     0 30px 70px rgb(42 56 107 / 14%),
@@ -85,21 +85,22 @@ body {
 }
 
 .converter-card .card-body {
-  padding: 1.35rem;
+  padding: 1.1rem;
 }
 
 .card-heading {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 0.9rem;
 }
 
 .section-label {
   display: block;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
   color: var(--brand);
-  font-size: 0.73rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.075em;
   text-transform: uppercase;
@@ -107,19 +108,25 @@ body {
 
 .card-heading h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 .secure-note {
   display: inline-flex;
   align-items: center;
-  align-self: flex-start;
   gap: 0.4rem;
   color: #4e5875;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.form-alert {
+  padding: 0.7rem 2.5rem 0.7rem 0.85rem;
+  border-radius: 0.7rem;
+  font-size: 0.83rem;
 }
 
 .status-dot {
@@ -131,9 +138,9 @@ body {
 }
 
 .form-label {
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.3rem;
   color: #4f5872;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 650;
 }
 
@@ -156,11 +163,11 @@ body {
 }
 
 .amount-field {
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.85rem;
 }
 
 .amount-field .input-group-text {
-  min-width: 3.25rem;
+  min-width: 3rem;
   justify-content: center;
   background: #f7f8fc;
   color: var(--brand);
@@ -169,40 +176,42 @@ body {
 
 .amount-field .form-control {
   min-width: 0;
-  font-size: 1.25rem;
+  min-height: 3rem;
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
 .currency-row {
-  row-gap: 0.65rem;
+  display: grid;
+  align-items: end;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
 .currency-row .form-select {
-  min-height: 3.2rem;
-  padding-right: 2.5rem;
-}
-
-.swap-column {
-  display: flex;
-  justify-content: center;
+  min-height: 3rem;
+  padding-right: 2.25rem;
+  text-overflow: ellipsis;
 }
 
 .swap-button {
   display: grid;
-  width: 2.8rem;
-  height: 2.8rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.2rem;
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 50%;
   color: var(--brand);
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 700;
   transition:
     transform 160ms ease,
     background-color 160ms ease;
 }
 
-.swap-button:hover {
+.swap-button:hover,
+.swap-button:focus-visible {
   border-color: rgb(49 87 213 / 20%);
   background: #eef2ff;
   color: var(--brand-dark);
@@ -210,10 +219,10 @@ body {
 }
 
 .rate-options {
-  margin-top: 1.2rem;
-  padding: 0.9rem 1rem;
+  margin-top: 0.85rem;
+  padding: 0.7rem 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 0.85rem;
+  border-radius: 0.75rem;
   background: #f8f9fd;
 }
 
@@ -224,7 +233,7 @@ body {
 
 .rate-options .form-check-label {
   color: #404a67;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 650;
 }
 
@@ -234,35 +243,35 @@ body {
 }
 
 .date-field {
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
   border-top: 1px solid var(--line);
 }
 
 .date-field .form-control {
-  min-height: 2.8rem;
+  min-height: 2.7rem;
   background-color: white;
 }
 
 .date-field .form-text {
   display: block;
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
   color: #7a8198;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
 }
 
 .convert-button {
   display: flex;
   width: 100%;
-  min-height: 3.35rem;
+  min-height: 3.1rem;
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  margin-top: 1.4rem;
+  margin-top: 1rem;
   border-color: var(--brand);
-  border-radius: 0.85rem;
+  border-radius: 0.8rem;
   background: var(--brand);
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 700;
   box-shadow: 0 12px 25px rgb(49 87 213 / 20%);
 }
@@ -275,7 +284,7 @@ body {
 
 .loading-state {
   display: flex;
-  min-height: 14rem;
+  min-height: 15rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -287,23 +296,23 @@ body {
 .result-panel {
   display: flex;
   flex-direction: column;
-  margin-top: 1.4rem;
-  padding: 1.15rem;
+  margin-top: 1rem;
+  padding: 0.95rem 1.05rem;
   border: 1px solid rgb(49 87 213 / 12%);
-  border-radius: 0.95rem;
+  border-radius: 0.9rem;
   background: linear-gradient(135deg, #eef2ff, #f5fbff);
 }
 
 .result-panel span {
   color: var(--muted);
-  font-size: 0.83rem;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .result-panel strong {
-  margin: 0.2rem 0;
+  margin: 0.15rem 0;
   color: var(--brand-dark);
-  font-size: clamp(1.65rem, 8vw, 2.4rem);
+  font-size: clamp(1.45rem, 6.8vw, 2.15rem);
   letter-spacing: -0.035em;
 }
 
@@ -312,7 +321,7 @@ body {
 }
 
 .history-card {
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 75%);
   border-radius: 1.25rem;
@@ -322,7 +331,7 @@ body {
 }
 
 .history-card .card-body {
-  padding: 1.25rem;
+  padding: 1.1rem;
 }
 
 .history-heading {
@@ -330,12 +339,12 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
 .history-heading h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
@@ -475,52 +484,52 @@ body {
 
 footer {
   max-width: 580px;
-  margin: 1.25rem auto 0;
+  margin: 1rem auto 0;
   color: #7a8198;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   text-align: center;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
   .app-shell {
-    display: flex;
-    align-items: center;
-    padding: 3rem 0;
+    padding: 2.5rem 0;
   }
 
   .page-header {
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.75rem;
   }
 
-  .page-header p {
-    font-size: 1.08rem;
+  .page-subtitle {
+    font-size: 1rem;
   }
 
   .converter-card .card-body {
-    padding: 2rem;
+    padding: 1.75rem;
   }
 
   .history-card .card-body {
-    padding: 1.5rem 2rem;
+    padding: 1.35rem 1.75rem;
   }
 
-  .card-heading {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
+  .card-heading h2 {
+    font-size: 1.15rem;
   }
 
-  .secure-note {
-    align-self: center;
-  }
-
-  .swap-column {
-    padding-bottom: 0.2rem;
+  .currency-row {
+    gap: 0.75rem;
   }
 
   .swap-button {
-    width: 3.2rem;
-    height: 3.2rem;
+    width: 3rem;
+    height: 3rem;
   }
 
   .history-item {
