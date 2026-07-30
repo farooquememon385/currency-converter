@@ -42,33 +42,35 @@ The app is served at `http://localhost:5173` and talks to the backend at
 Netlify serves static sites only, so deploy the frontend to Netlify and the
 NestJS backend to Railway (or another Node host).
 
-### Backend (Railway)
+### Backend (Railway + Docker)
 
-Uses the Dockerfile in `backend/` with BuildKit.
+Built from [`backend/Dockerfile`](backend/Dockerfile) using BuildKit.
 
 1. New Project → Deploy from GitHub repo.
-2. Settings → **Root Directory:** `backend`
-3. Clear any custom build command (Docker build handles it).
-4. Environment variables:
+2. Settings:
+   - **Root Directory:** `backend`
+   - **Builder:** Dockerfile, **Dockerfile Path:** `/backend/Dockerfile`
+   - Leave custom build/start commands empty.
+3. Environment variables:
    - `FREE_CURRENCY_API_KEY` — your FreeCurrencyAPI key
    - `FREE_CURRENCY_BASE_URL` — `https://api.freecurrencyapi.com/v1`
-   - `FRONTEND_URL` — your Netlify site URL (for CORS)
-5. Networking → Generate Domain, then copy the URL.
+   - `FRONTEND_URL` — your Netlify origin, no trailing slash
+4. Networking → Generate Domain, then copy the URL.
 
 See [backend/README.md](backend/README.md) for details.
 
 ### Frontend (Netlify)
 
 The included [`netlify.toml`](netlify.toml) sets the base directory, build
-command, and SPA redirect.
+command, publish folder, and SPA redirect.
 
 1. New site → import this repo (settings are read from `netlify.toml`).
 2. Environment variable:
-   - `VITE_API_BASE_URL` — your Railway backend URL
+   - `VITE_API_BASE_URL` — your Railway backend URL (no trailing slash)
 3. Deploy.
 
-After both are live, ensure the backend's `FRONTEND_URL` matches the Netlify
-URL so CORS allows the requests.
+After both are live, set the backend's `FRONTEND_URL` to the Netlify origin
+(without a trailing slash) so CORS allows the requests.
 
 ## Tech stack
 
