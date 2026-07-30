@@ -8,7 +8,11 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { CurrenciesResponse, LatestRatesResponse } from './currency.types';
+import {
+  CurrenciesResponse,
+  HistoricalRatesResponse,
+  LatestRatesResponse,
+} from './currency.types';
 
 @Injectable()
 export class CurrencyService {
@@ -45,6 +49,48 @@ export class CurrencyService {
     }
 
     return this.get<LatestRatesResponse>('/latest', params);
+  }
+
+  async getHistoricalRates(
+    date: string,
+    baseCurrency = 'USD',
+    currencies?: string,
+  ): Promise<HistoricalRatesResponse> {
+    const params: Record<string, string> = {
+      date: this.normalizeDate(date),
+      base_currency: this.normalizeCurrency(baseCurrency),
+    };
+
+    if (currencies) {
+      params.currencies = currencies
+        .split(',')
+        .map((currency) => this.normalizeCurrency(currency))
+        .join(',');
+    }
+
+    return this.get<HistoricalRatesResponse>('/historical', params);
+  }
+
+  private normalizeDate(date: string): string {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new BadRequestException('Date must use YYYY-MM-DD format');
+    }
+
+    const parsedDate = new Date(`${date}T00:00:00.000Z`);
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.toISOString().slice(0, 10) !== date
+    ) {
+      throw new BadRequestException('Date is invalid');
+    }
+
+    if (date >= today) {
+      throw new BadRequestException('Historical date must be before today');
+    }
+
+    return date;
   }
 
   private normalizeCurrency(currency: string): string {

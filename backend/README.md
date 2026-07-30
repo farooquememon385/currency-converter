@@ -19,6 +19,8 @@ default.
 - `GET /health` — service health check
 - `GET /api/currencies` — all currencies supported by FreeCurrencyAPI
 - `GET /api/currencies/latest?base=USD&currencies=EUR,GBP` — latest rates
+- `GET /api/currencies/historical?date=2024-01-15&base=USD&currencies=EUR,GBP`
+  — rates for a historical date
 
 The `base` query defaults to `USD`. The optional `currencies` query accepts
 comma-separated three-letter currency codes.

@@ -11,6 +11,7 @@ import Row from 'react-bootstrap/Row'
 import Spinner from 'react-bootstrap/Spinner'
 import {
   getCurrencies,
+  getHistoricalRate,
   getLatestRate,
   type Currency,
 } from './api/currency'
@@ -23,7 +24,22 @@ interface ConversionResult {
   convertedAmount: number
   from: string
   rate: number
+  rateDate?: string
   to: string
+}
+
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function getDefaultHistoricalDate(): string {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  return toDateInputValue(yesterday)
 }
 
 function formatCurrency(value: number, currency: string): string {
@@ -39,6 +55,8 @@ function App() {
   const [amount, setAmount] = useState('1')
   const [fromCurrency, setFromCurrency] = useState('USD')
   const [toCurrency, setToCurrency] = useState('EUR')
+  const [useHistoricalRate, setUseHistoricalRate] = useState(false)
+  const [rateDate, setRateDate] = useState(getDefaultHistoricalDate)
   const [result, setResult] = useState<ConversionResult | null>(null)
   const [loadingCurrencies, setLoadingCurrencies] = useState(true)
   const [converting, setConverting] = useState(false)
@@ -93,6 +111,12 @@ function App() {
       return
     }
 
+    if (useHistoricalRate && !rateDate) {
+      setError('Select a date for the historical exchange rate.')
+      setResult(null)
+      return
+    }
+
     setError('')
     setConverting(true)
 
@@ -100,12 +124,15 @@ function App() {
       const rate =
         fromCurrency === toCurrency
           ? 1
-          : await getLatestRate(fromCurrency, toCurrency)
+          : useHistoricalRate
+            ? await getHistoricalRate(rateDate, fromCurrency, toCurrency)
+            : await getLatestRate(fromCurrency, toCurrency)
       const conversionResult: ConversionResult = {
         amount: numericAmount,
         convertedAmount: numericAmount * rate,
         from: fromCurrency,
         rate,
+        rateDate: useHistoricalRate ? rateDate : undefined,
         to: toCurrency,
       }
 
@@ -244,6 +271,42 @@ function App() {
                   </Col>
                 </Row>
 
+                <div className="rate-options">
+                  <Form.Check
+                    type="switch"
+                    id="historical-rate"
+                    label="Use a historical exchange rate"
+                    checked={useHistoricalRate}
+                    onChange={(event) => {
+                      setUseHistoricalRate(event.target.checked)
+                      setResult(null)
+                      setError('')
+                    }}
+                  />
+
+                  {useHistoricalRate && (
+                    <Form.Group controlId="rate-date" className="date-field">
+                      <Form.Label>Exchange rate date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        min="1999-01-01"
+                        max={getDefaultHistoricalDate()}
+                        value={rateDate}
+                        onChange={(event) => {
+                          setRateDate(event.target.value)
+                          setResult(null)
+                          setError('')
+                        }}
+                        required
+                      />
+                      <Form.Text>
+                        Historical end-of-day rates are generally available
+                        from 1999.
+                      </Form.Text>
+                    </Form.Group>
+                  )}
+                </div>
+
                 <Button
                   type="submit"
                   size="lg"
@@ -276,6 +339,7 @@ function App() {
                 </strong>
                 <small>
                   1 {result.from} = {result.rate.toLocaleString()} {result.to}
+                  {result.rateDate && ` · Rate from ${result.rateDate}`}
                 </small>
               </section>
             )}

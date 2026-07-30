@@ -74,6 +74,36 @@ describe('CurrencyService', () => {
     );
   });
 
+  it('requests historical rates for a valid date', async () => {
+    httpService.get.mockReturnValue(
+      of({ data: { data: { '2024-01-15': { EUR: 0.91 } } } }),
+    );
+
+    await service.getHistoricalRates('2024-01-15', 'usd', 'eur');
+
+    expect(httpService.get).toHaveBeenCalledWith(
+      'https://currency.test/v1/historical',
+      {
+        headers: { apikey: 'test-key' },
+        params: {
+          date: '2024-01-15',
+          base_currency: 'USD',
+          currencies: 'EUR',
+        },
+      },
+    );
+  });
+
+  it('rejects invalid and future historical dates', async () => {
+    await expect(
+      service.getHistoricalRates('2024-02-31'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      service.getHistoricalRates('2999-01-01'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(httpService.get).not.toHaveBeenCalled();
+  });
+
   it('rejects invalid currency codes before requesting the provider', async () => {
     await expect(service.getLatestRates('US')).rejects.toBeInstanceOf(
       BadRequestException,

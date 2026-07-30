@@ -17,4 +17,17 @@ export class CurrencyController {
   ) {
     return this.currencyService.getLatestRates(baseCurrency, currencies);
   }
+
+  @Get('historical')
+  getHistoricalRates(
+    @Query('date') date: string,
+    @Query('base') baseCurrency = 'USD',
+    @Query('currencies') currencies?: string,
+  ) {
+    return this.currencyService.getHistoricalRates(
+      date,
+      baseCurrency,
+      currencies,
+    );
+  }
 }

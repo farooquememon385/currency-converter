@@ -22,6 +22,12 @@ function formatDate(date: string): string {
   }).format(new Date(date))
 }
 
+function formatRateDate(date: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+  }).format(new Date(`${date}T00:00:00`))
+}
+
 function ConversionHistory({ history, onClear }: ConversionHistoryProps) {
   const handleClear = () => {
     if (window.confirm('Clear all conversion history?')) {
@@ -71,6 +77,15 @@ function ConversionHistory({ history, onClear }: ConversionHistoryProps) {
                     {entry.from} → {entry.to}
                   </strong>
                   <span>{formatDate(entry.createdAt)}</span>
+                  <small
+                    className={
+                      entry.rateDate ? 'rate-label historical' : 'rate-label'
+                    }
+                  >
+                    {entry.rateDate
+                      ? `Historical · ${formatRateDate(entry.rateDate)}`
+                      : 'Latest rate'}
+                  </small>
                 </div>
                 <div className="history-values">
                   <strong>

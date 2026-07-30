@@ -9,6 +9,7 @@ export interface ConversionHistoryEntry {
   convertedAmount: number
   from: string
   rate: number
+  rateDate?: string
   to: string
   createdAt: string
 }
@@ -31,6 +32,7 @@ function isHistoryEntry(value: unknown): value is ConversionHistoryEntry {
     typeof entry.convertedAmount === 'number' &&
     typeof entry.from === 'string' &&
     typeof entry.rate === 'number' &&
+    (entry.rateDate === undefined || typeof entry.rateDate === 'string') &&
     typeof entry.to === 'string' &&
     typeof entry.createdAt === 'string'
   )

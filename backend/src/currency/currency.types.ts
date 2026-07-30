@@ -16,3 +16,7 @@ export interface CurrenciesResponse {
 export interface LatestRatesResponse {
   data: Record<string, number>;
 }
+
+export interface HistoricalRatesResponse {
+  data: Record<string, Record<string, number>>;
+}
