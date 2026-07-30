@@ -37,6 +37,38 @@ npm run dev
 The app is served at `http://localhost:5173` and talks to the backend at
 `http://localhost:3000`.
 
+## Deployment
+
+Netlify serves static sites only, so deploy the frontend to Netlify and the
+NestJS backend to a free Node host such as [Render](https://render.com/).
+
+### Backend (Render)
+
+1. New → Web Service, and point it at this repo.
+2. Root Directory: `backend`
+3. Build Command: `npm install && npm run build`
+4. Start Command: `npm run start:prod`
+5. Environment variables:
+   - `FREE_CURRENCY_API_KEY` — your FreeCurrencyAPI key
+   - `FRONTEND_URL` — your Netlify site URL (for CORS), e.g. `https://your-app.netlify.app`
+6. Deploy and copy the service URL, e.g. `https://your-api.onrender.com`.
+
+### Frontend (Netlify)
+
+The included [`netlify.toml`](netlify.toml) sets the base directory, build
+command, and SPA redirect.
+
+1. New site → import this repo (settings are read from `netlify.toml`).
+2. Environment variable:
+   - `VITE_API_BASE_URL` — your Render backend URL, e.g. `https://your-api.onrender.com`
+3. Deploy.
+
+After both are live, ensure the backend's `FRONTEND_URL` matches the Netlify
+URL so CORS allows the requests.
+
+> Render's free tier sleeps when idle, so the first request after inactivity
+> may take a few seconds.
+
 ## Tech stack
 
 - Frontend: React, TypeScript, Vite, Bootstrap
