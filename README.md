@@ -40,18 +40,22 @@ The app is served at `http://localhost:5173` and talks to the backend at
 ## Deployment
 
 Netlify serves static sites only, so deploy the frontend to Netlify and the
-NestJS backend to a free Node host such as [Render](https://render.com/).
+NestJS backend to Railway (or another Node host).
 
-### Backend (Render)
+### Backend (Railway)
 
-1. New → Web Service, and point it at this repo.
-2. Root Directory: `backend`
-3. Build Command: `npm install && npm run build`
-4. Start Command: `npm run start:prod`
-5. Environment variables:
+Uses the Dockerfile in `backend/` with BuildKit.
+
+1. New Project → Deploy from GitHub repo.
+2. Settings → **Root Directory:** `backend`
+3. Clear any custom build command (Docker build handles it).
+4. Environment variables:
    - `FREE_CURRENCY_API_KEY` — your FreeCurrencyAPI key
-   - `FRONTEND_URL` — your Netlify site URL (for CORS), e.g. `https://your-app.netlify.app`
-6. Deploy and copy the service URL, e.g. `https://your-api.onrender.com`.
+   - `FREE_CURRENCY_BASE_URL` — `https://api.freecurrencyapi.com/v1`
+   - `FRONTEND_URL` — your Netlify site URL (for CORS)
+5. Networking → Generate Domain, then copy the URL.
+
+See [backend/README.md](backend/README.md) for details.
 
 ### Frontend (Netlify)
 
@@ -60,14 +64,11 @@ command, and SPA redirect.
 
 1. New site → import this repo (settings are read from `netlify.toml`).
 2. Environment variable:
-   - `VITE_API_BASE_URL` — your Render backend URL, e.g. `https://your-api.onrender.com`
+   - `VITE_API_BASE_URL` — your Railway backend URL
 3. Deploy.
 
 After both are live, ensure the backend's `FRONTEND_URL` matches the Netlify
 URL so CORS allows the requests.
-
-> Render's free tier sleeps when idle, so the first request after inactivity
-> may take a few seconds.
 
 ## Tech stack
 

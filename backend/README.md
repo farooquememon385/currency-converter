@@ -63,30 +63,38 @@ Copy the service URL into the frontend's `VITE_API_BASE_URL` env var.
 
 ## Deploy (Railway)
 
-Railway builds with **Railpack**. This is a monorepo with no `package.json` at
-the repo root, so point the service at `backend`.
+Railway builds this service with a **Dockerfile** (BuildKit).
 
 1. **New Project** → **Deploy from GitHub repo**.
 2. Service → **Settings**:
    - **Root Directory:** `backend`
-   - **Config as Code:** `/backend/railway.json`
-     (Railway does **not** follow Root Directory for the config file path)
-3. Build/start commands come from [`railway.json`](railway.json):
-   - Build: `npm ci --include=dev && npm run build`
-   - Start: `npm run start:prod`
-4. Add the same environment variables listed above, but **do not set `PORT`** —
-   Railway injects it.
-5. **Settings** → **Networking** → **Generate Domain**.
-6. Check `https://<your-domain>.up.railway.app/health`.
+   - Clear any custom build command (Dockerfile handles the build)
+3. Add environment variables:
+
+| Variable | Value |
+| --- | --- |
+| `FREE_CURRENCY_API_KEY` | your FreeCurrencyAPI key |
+| `FREE_CURRENCY_BASE_URL` | `https://api.freecurrencyapi.com/v1` |
+| `FRONTEND_URL` | your frontend URL, e.g. `https://your-app.netlify.app` |
+| `PORT` | leave empty (Railway sets this) |
+
+4. **Networking** → **Generate Domain**.
+5. Check `https://<your-domain>.up.railway.app/health`.
+
+Local image build:
+
+```bash
+cd backend
+DOCKER_BUILDKIT=1 docker build -t currency-converter-api .
+```
 
 ### Common build failures
 
 | Error | Cause | Fix |
 | --- | --- | --- |
-| Railpack can't detect the app / no `package.json` | Root Directory not set | Set Root Directory to `backend` |
-| Config ignored | Config path not set | Set Config as Code to `/backend/railway.json` |
-| `nest: not found` | prod install skips `@nestjs/cli` | Keep the `--include=dev` build command |
-| `Cannot find module '.../dist/main'` | Build didn't run | Confirm build command in `railway.json` |
+| Dockerfile / package.json not found | Root Directory not set | Set Root Directory to `backend` |
+| GitHub Repo not found | Railway GitHub app missing access | Reconnect GitHub and grant the repo |
+| CORS errors from frontend | `FRONTEND_URL` wrong | Set it to the Netlify site origin |
 
 ## Commands
 
