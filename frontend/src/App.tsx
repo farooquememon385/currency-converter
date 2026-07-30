@@ -14,7 +14,9 @@ import {
   getLatestRate,
   type Currency,
 } from './api/currency'
+import ConversionHistory from './components/ConversionHistory'
 import CurrencySelect from './components/CurrencySelect'
+import { useConversionHistory } from './hooks/useConversionHistory'
 
 interface ConversionResult {
   amount: number
@@ -41,6 +43,7 @@ function App() {
   const [loadingCurrencies, setLoadingCurrencies] = useState(true)
   const [converting, setConverting] = useState(false)
   const [error, setError] = useState('')
+  const { history, addConversion, clearHistory } = useConversionHistory()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -98,14 +101,16 @@ function App() {
         fromCurrency === toCurrency
           ? 1
           : await getLatestRate(fromCurrency, toCurrency)
-
-      setResult({
+      const conversionResult: ConversionResult = {
         amount: numericAmount,
         convertedAmount: numericAmount * rate,
         from: fromCurrency,
         rate,
         to: toCurrency,
-      })
+      }
+
+      setResult(conversionResult)
+      addConversion(conversionResult)
     } catch (requestError: unknown) {
       setResult(null)
       setError(
@@ -276,6 +281,8 @@ function App() {
             )}
           </Card.Body>
         </Card>
+
+        <ConversionHistory history={history} onClear={clearHistory} />
 
         <footer>
           Rates are supplied by FreeCurrencyAPI and may differ from provider
